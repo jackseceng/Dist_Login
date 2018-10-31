@@ -1,8 +1,9 @@
+import hashlib as hash
 import getpass as get
 import re
 import sys
 
-def validate(input):
+def validate_mode(input):
 	if len(input) > 1:
 		print('Please use a single letter \'e\' or \'n\' to specify mode')
 		sys.exit()
@@ -13,29 +14,35 @@ def validate(input):
 	else:
 		return(input)
 
-def newu():
+def new_user():
 	print('Create new account')
-	newu = input('New Username: ')
-	newp = get.getpass('New Password: ')
-	print(newu)
-	print(newp)
+	new_username = input('New Username: ')
+	new_password = get.getpass('New Password: ')
+	print(new_username)
+	print(new_password)
+	encoded_password = encode(new_password)
+	print(encoded_password)
 	sys.exit()
 
-def existu():
-	uname = input('Username: ')
-	paswd = get.getpass('Password: ')
-	print(uname)
-	print(paswd)
+def existing_user():
+	username = input('Username: ')
+	password = get.getpass('Password: ')
+	print(username)
+	print(password)
 	sys.exit()
 
-def selectmode(mode):
+def select_mode(mode):
 	if 'n' in mode:
-		newu()
+		new_user()
 	elif 'e' in mode:
-		existu()
+		existing_user()
 	else:
 		print('Please specify mode using the letter \'e\' or the letter \'n\'')
 
+def encode(string):
+	encoded_password = hash.sha256(string.encode())
+	return(encoded_password)
+
 mode = input('Type \'e\' for existing user, or \'n\' for new user: ')
-mode = validate(mode)
-selectmode(mode)
+mode = validate_mode(mode)
+select_mode(mode)
