@@ -1,92 +1,153 @@
-import hashlib as hash
-import getpass as get_password
-import string
 import re as regular_expression
-import sys as system
+from getpass import getpass as get_password
+from hashlib import sha256 as hash_data
+from sys import exit
 
-def validate_mode(input):
-	if len(input) > 1: return 1
 
-	elif not regular_expression.match('[n]|[e]', input): return 2
+def validate_mode(arg):
+    if len(arg) > 1:
+        return 1
 
-	else: return 0
+    elif not regular_expression.match('[n]|[e]', arg):
+        return 2
 
-def validate_username(input):
-	if len(input) > 100: return 1
+    else:
+        return 0
 
-	elif not regular_expression.match('[a-z]|[A-Z]|[0-9]', input): return 2
 
-	elif sql_inject_check(input) == True: return 3
+def validate_username(arg):
+    if len(arg) > 100:
+        return 1
 
-	else: return 0
+    elif not regular_expression.match('[a-z]|[A-Z]|[0-9]', arg):
+        return 2
 
-def validate_password(input):
-	if len(input) > 100: return 1
+    elif sql_inject_check(arg) is True:
+        return 3
 
-	elif sql_inject_check(input) == True: return 2
+    else:
+        return 0
 
-	else: return 0
 
-def sql_inject_check(input):
+def validate_password(arg):
+    if len(arg) > 100:
+        return 1
 
-	if input in open('sql_inject_strings.txt').read(): return True
+    elif sql_inject_check(arg) is True:
+        return 2
 
-	else: return False
+    else:
+        return 0
+
+
+def sql_inject_check(arg):
+    if arg in open('sql_inject_strings.txt').read():
+        return True
+
+    else:
+        return False
+
 
 def new_user():
-	print('Create new account')
-	error_token = 4
-	while error_token != 0:
-		new_username = input('New Username: ')
-		error_token = validate_username(new_username)
-		if error_token == 1:
-			print('Username too long, please try again.')
-		elif error_token == 2:
-			print('Username contains symbols, please try again.')
-		elif error_token == 3:
-			print('Username contains forbidden string, please try again.')
+    print('Create new account')
+    new_username = input_username(1)
+    new_password = input_password(1)
+    hashed_password = hash_password(new_password)
+    output_results(new_username, new_password, hashed_password)
 
-	error_token = 4
-	while error_token != 0:
-		new_password = get_password.getpass('New Password: ')
-		error_token = validate_password(new_password)
-		if error_token == 1:
-			print('Password too long, please try again.')
-		elif error_token == 2:
-			print('Password contains forbidden string, please try again.')
-
-	print(new_username)
-	print(new_password)
-	encoded_password = encode(new_password)
-	print(encoded_password)
-	print(error_token)
-	system.exit()
 
 def existing_user():
-	username = input('Username: ')
-	password = get_password.getpass('Password: ')
-	print(username)
-	print(password)
-	system.exit()
+    print('Existing user login')
+    existing_username = input_username(2)
+    existing_password = input_password(2)
+    hashed_password = hash_password(existing_password)
+    output_results(existing_username, existing_password, hashed_password)
+
+
+def input_username(mode):
+    arg = ''
+    error_token = 4
+    if mode is 1:
+        arg = input('New Username: ')
+    elif mode is 2:
+        arg = input('Existing Username: ')
+    while error_token != 0:
+        error_token = validate_username(arg)
+        if error_token == 1:
+            print('Username too long, please try again.')
+            if mode is 1:
+                arg = input('New Username: ')
+            elif mode is 2:
+                arg = input('Existing Username: ')
+        elif error_token == 2:
+            print('Username contains symbols, please try again.')
+            if mode is 1:
+                arg = input('New Username: ')
+            elif mode is 2:
+                arg = input('Existing Username: ')
+        elif error_token == 3:
+            print('Username contains forbidden string, please try again.')
+            if mode is 1:
+                arg = input('New Username: ')
+            elif mode is 2:
+                arg = input('Existing Username: ')
+    return arg
+
+
+def input_password(mode):
+    arg = ''
+    error_token = 4
+    if mode is 1:
+        arg = input('New Password: ')
+    elif mode is 2:
+        arg = input('Password: ')
+    while error_token != 0:
+        error_token = validate_password(arg)
+        if error_token == 1:
+            print('Password too long, please try again.')
+            if mode is 1:
+                arg = get_password('New Password: ')
+            elif mode is 2:
+                arg = get_password('Password: ')
+        elif error_token == 2:
+            print('Password contains forbidden string, please try again.')
+            if mode is 1:
+                arg = get_password('New Password: ')
+            elif mode is 2:
+                arg = get_password('Password: ')
+    return arg
+
 
 def select_mode():
-	error_token = 3
-	while error_token !=0:
-		mode = input('Select mode: ')
-		error_token = validate_mode(mode)
-		if error_token == 1:
-			print("Please use the single letter \'n\' or \'e\' to choose mode.")
-		elif error_token == 2:
-			print("Please use \'n\' for New User account creation, or \'e\' for Existing User login.")
+    print('Select \'e\' for Existing User login, or \'n\' for New User account creation')
+    mode = input('Select mode: ')
+    error_token = 3
+    while error_token != 0:
+        error_token = validate_mode(mode)
+        if error_token == 1:
+            print("Please use the single letter \'n\' or \'e\' to choose mode.")
+            mode = input('Select mode: ')
+        elif error_token == 2:
+            print("Please use \'n\' for New User account creation, or \'e\' for Existing User login.")
+            mode = input('Select mode: ')
 
-	if 'n' in mode:
-		new_user()
-	elif 'e' in mode:
-		existing_user()
+    if 'n' in mode:
+        new_user()
 
-def encode(string):
-	encoded_password = hash.sha256(string.encode())
-	return(encoded_password)
+    if 'e' in mode:
+        existing_user()
 
-print('Select \'e\' for Existing User login, or \'n\' for New User account creation: ')
+
+def hash_password(arg):
+    hashed_string = hash_data(arg.encode())
+    return hashed_string.hexdigest()
+
+
+def output_results(username, password, hashed_password):
+    print(username)
+    print(password)
+    print(hashed_password)
+    exit()
+
+
 select_mode()
