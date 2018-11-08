@@ -71,21 +71,21 @@ def input_username(mode):
         arg = input('New Username: ')
     elif mode is 2:
         arg = input('Existing Username: ')
-    while error_token != 0:
+    while error_token is not 0:
         error_token = validate_username(arg)
-        if error_token == 1:
+        if error_token is 1:
             print('Username too long, please try again.')
             if mode is 1:
                 arg = input('New Username: ')
             elif mode is 2:
                 arg = input('Existing Username: ')
-        elif error_token == 2:
+        elif error_token is 2:
             print('Username contains symbols, please try again.')
             if mode is 1:
                 arg = input('New Username: ')
             elif mode is 2:
                 arg = input('Existing Username: ')
-        elif error_token == 3:
+        elif error_token is 3:
             print('Username contains forbidden string, please try again.')
             if mode is 1:
                 arg = input('New Username: ')
@@ -101,15 +101,15 @@ def input_password(mode):
         arg = input('New Password: ')
     elif mode is 2:
         arg = input('Password: ')
-    while error_token != 0:
+    while error_token is not 0:
         error_token = validate_password(arg)
-        if error_token == 1:
+        if error_token is 1:
             print('Password too long, please try again.')
             if mode is 1:
                 arg = get_password('New Password: ')
             elif mode is 2:
                 arg = get_password('Password: ')
-        elif error_token == 2:
+        elif error_token is 2:
             print('Password contains forbidden string, please try again.')
             if mode is 1:
                 arg = get_password('New Password: ')
@@ -122,12 +122,12 @@ def select_mode():
     print('Select \'e\' for Existing User login, or \'n\' for New User account creation')
     mode = input('Select mode: ')
     error_token = 3
-    while error_token != 0:
+    while error_token is not 0:
         error_token = validate_mode(mode)
-        if error_token == 1:
+        if error_token is 1:
             print("Please use the single letter \'n\' or \'e\' to choose mode.")
             mode = input('Select mode: ')
-        elif error_token == 2:
+        elif error_token is 2:
             print("Please use \'n\' for New User account creation, or \'e\' for Existing User login.")
             mode = input('Select mode: ')
 
