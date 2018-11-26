@@ -1,6 +1,7 @@
 import re as regular_expression
 from getpass import getpass as get_password
-from hashlib import sha256 as hash_data
+from hashlib import sha256 as sha256_hash_data
+from hashlib import sha1 as sha1_hash_data
 from sys import exit
 
 
@@ -48,22 +49,6 @@ def sql_inject_check(arg):
         return False
 
 
-def new_user():
-    print('Create new account')
-    new_username = input_username(1)
-    new_password = input_password(1)
-    hashed_password = hash_password(new_password)
-    output_results(new_username, new_password, hashed_password)
-
-
-def existing_user():
-    print('Existing user login')
-    existing_username = input_username(2)
-    existing_password = input_password(2)
-    hashed_password = hash_password(existing_password)
-    output_results(existing_username, existing_password, hashed_password)
-
-
 def input_username(mode):
     arg = ''
     error_token = 4
@@ -98,9 +83,9 @@ def input_password(mode):
     arg = ''
     error_token = 4
     if mode is 1:
-        arg = input('New Password: ')
+        arg = get_password('New Password: ')
     elif mode is 2:
-        arg = input('Password: ')
+        arg = get_password('Password: ')
     while error_token is not 0:
         error_token = validate_password(arg)
         if error_token is 1:
@@ -116,6 +101,12 @@ def input_password(mode):
             elif mode is 2:
                 arg = get_password('Password: ')
     return arg
+
+
+def hash_credentials(username, password):
+    credentials = username + password
+    hashed_credentials = sha256_hash_data(credentials.encode())
+    return hashed_credentials.hexdigest()
 
 
 def select_mode():
@@ -138,15 +129,71 @@ def select_mode():
         existing_user()
 
 
-def hash_password(arg):
-    hashed_string = hash_data(arg.encode())
-    return hashed_string.hexdigest()
+def new_user():
+    print('Create new account')
+    new_username = input_username(1)
+    new_password = input_password(1)
+    key = hash_credentials(new_username, new_password)
+    fingerprint_key(key, 1)
+    breakup_key(key)
+    output_results(new_username, new_password)
 
 
-def output_results(username, password, hashed_password):
-    print(username)
-    print(password)
-    print(hashed_password)
+def existing_user():
+    print('Login to existing account')
+    existing_username = input_username(2)
+    existing_password = input_password(2)
+    key = read_credentials()
+    is_key_correct = fingerprint_key(key, 2)
+    if is_key_correct is True:
+        print("Key is correct, login verified.")
+        output_results(existing_username, existing_password)
+    else:
+        print("Key not correct, exiting...")
+        exit()
+
+
+def read_credentials():
+    extracted_chunk0 = open("chunk0.txt").read()
+    extracted_chunk1 = open("chunk1.txt").read()
+    key = extracted_chunk0 + extracted_chunk1
+    return key
+
+
+def fingerprint_key(arg, mode):
+    if mode is 1:
+        fingerprint = sha1_hash_data(arg.encode())
+        fingerprint_file = open("fingerprint.txt", "w")
+        fingerprint_file.write(fingerprint.hexdigest())
+        fingerprint_file.close()
+    if mode is 2:
+        fingerprint = sha1_hash_data(arg.encode())
+        fingerprint_file = open("fingerprint.txt").read()
+        if fingerprint_file == fingerprint.hexdigest():
+            return True
+        else:
+            return False
+
+
+def breakup_key(arg):
+    chunks = regular_expression.findall('................................?', arg)
+    chunk_file0 = open("chunk0.txt", "w")
+    chunk_file0.write(chunks[0])
+    chunk_file0.close()
+    chunk_file1 = open("chunk1.txt", "w")
+    chunk_file1.write(chunks[1])
+    chunk_file1.close()
+
+
+def output_results(username, password):  # This function is for debugging
+    print(" UsrNme", username)
+    print(" PassWd", password)
+    compiled_key = read_credentials()
+    print("CompKey", compiled_key)  # Compiled key using the read_credentials function
+    fingerprint_file = open("fingerprint.txt").read()
+    print("FP File", fingerprint_file)  # Fingerprint of compiled key for verification
+    fingerprint = sha1_hash_data(compiled_key.encode())
+    print(" FPrint", fingerprint.hexdigest())  # Fingerprint as passed in from the existing/new_user functions
     exit()
 
 
