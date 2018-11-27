@@ -143,7 +143,7 @@ def existing_user():
     print('Login to existing account')
     existing_username = input_username(2)
     existing_password = input_password(2)
-    key = read_credentials()
+    key = hash_credentials(existing_username, existing_password)
     is_key_correct = fingerprint_key(key, 2)
     if is_key_correct is True:
         print("Key is correct, login verified.")
