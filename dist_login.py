@@ -128,70 +128,66 @@ def new_user():
     print('Create new account')
     new_username = input_username(1)
     new_password = input_password(1)
-    key = hash_credentials(new_username, new_password, 2)
-    fingerprint_key(key, 1)
-    breakup_key(key)
-    output_results(new_username, new_password)
+    time = current_time()
+    key = generate_key(new_username + new_password + time)
+    fingerprint = fingerprint_key(key)
+    store_key_fingerprint(key, fingerprint)
+    output_results(new_username, new_password, key)
 
 
 def existing_user():
     print('Login to existing account')
     existing_username = input_username(2)
     existing_password = input_password(2)
-    key = hash_credentials(existing_username, existing_password, 1)
-    is_key_correct = fingerprint_key(key, 2)
+    previous_timestamp = open("timestamp.txt").read()
+    key = generate_key(existing_username + existing_password + previous_timestamp)
+    is_key_correct = fingerprint_check(key)
     if is_key_correct is True:
         print("Key is correct, login verified.")
-        output_results(existing_username, existing_password)
+        output_results(existing_username, existing_password, key)
     else:
         print("Key not correct, exiting...")
         exit()
 
 
-def read_credentials():
+def generate_key(arg):
+    hashed_key = sha256_hash_data(arg.encode())
+    return hashed_key.hexdigest()
+
+
+def fingerprint_key(arg):
+    fingerprint = sha1_hash_data(arg.encode())
+    return fingerprint.hexdigest()
+
+
+def fingerprint_check(arg):
+    stored_key = read_stored_key()
+    stored_key_fingerprint = fingerprint_key(stored_key)
+    submitted_key_fingerprint = fingerprint_key(arg)
+    if stored_key_fingerprint == submitted_key_fingerprint:
+        return True
+    else:
+        return False
+
+
+def read_stored_key():
     extracted_chunk0 = open("chunk0.txt").read()
     extracted_chunk1 = open("chunk1.txt").read()
-    timestamp = open("timestamp.txt").read()
-    key = extracted_chunk0 + extracted_chunk1 + timestamp
+    key = extracted_chunk0 + extracted_chunk1
     return key
 
 
-def hash_credentials(username, password, mode):
-    if mode is 1:
-        time = open("timestamp.txt").read()
-        credentials = username + password + time
-        hashed_credentials = sha256_hash_data(credentials.encode())
-        return hashed_credentials.hexdigest()
-    if mode is 2:
-        time = current_time()
-        credentials = username + password + time
-        hashed_credentials = sha256_hash_data(credentials.encode())
-        return hashed_credentials.hexdigest()
-
-
-def fingerprint_key(arg, mode):
-    if mode is 1:
-        fingerprint = sha1_hash_data(arg.encode())
-        fingerprint_file = open("fingerprint.txt", "w")
-        fingerprint_file.write(fingerprint.hexdigest())
-        fingerprint_file.close()
-    if mode is 2:
-        fingerprint = sha1_hash_data(arg.encode())
-        fingerprint_file = open("fingerprint.txt").read()
-        if fingerprint_file == fingerprint.hexdigest():
-            return True
-        else:
-            return False
-
-
-def breakup_key(arg):
-    chunks = regular_expression.findall('................................?', arg)
+def store_key_fingerprint(key, fingerprint):
+    chunks = regular_expression.findall('................................?', key)
     chunk_file0 = open("chunk0.txt", "w")
     chunk_file0.write(chunks[0])
     chunk_file0.close()
     chunk_file1 = open("chunk1.txt", "w")
     chunk_file1.write(chunks[1])
     chunk_file1.close()
+    fingerprint_file = open("fingerprint.txt", "w")
+    fingerprint_file.write(fingerprint)
+    fingerprint_file.close()
 
 
 def current_time():
@@ -204,13 +200,14 @@ def current_time():
     return time
 
 
-def output_results(username, password):  # This function is for debugging
+def output_results(username, password, key):  # This function is for debugging
     print(" UsrNme", username)
     print(" PassWd", password)
-    compiled_key = read_credentials()
-    print("CompKey", compiled_key)  # Compiled key using the read_credentials function
+    print("  InKey", key)  # The key passed into the output results function from existing or new user function
+    compiled_key = read_stored_key()
+    print("CompKey", compiled_key)  # Compiled key using the read_stored_key function
     fingerprint_file = open("fingerprint.txt").read()
-    print("FP File", fingerprint_file)  # Fingerprint of compiled key for verification
+    print("FP File", fingerprint_file)  # Fingerprint stored in fingerprint file
 
 
 select_mode()
