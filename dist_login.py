@@ -2,8 +2,10 @@ import re as regular_expression
 from getpass import getpass as get_password
 from hashlib import sha256 as sha256_hash_data
 from hashlib import sha1 as sha1_hash_data
-import datetime
 from sys import exit
+import datetime
+import subprocess
+import os
 
 
 def validate_mode(arg):
@@ -179,12 +181,13 @@ def read_stored_key():
 
 def store_key_fingerprint(key, fingerprint):
     chunks = regular_expression.findall('................................?', key)
-    chunk_file0 = open("chunk0.txt", "w")
-    chunk_file0.write(chunks[0])
-    chunk_file0.close()
-    chunk_file1 = open("chunk1.txt", "w")
-    chunk_file1.write(chunks[1])
-    chunk_file1.close()
+    write_chunk0 = usb_detect_and_write(chunks[0])
+    if write_chunk0 is 1:
+        print ("KEYDRIVE not detected")
+        exit()
+    chunk_file = open("chunk.txt", "w")
+    chunk_file.write(chunks[1])
+    chunk_file.close()
     fingerprint_file = open("fingerprint.txt", "w")
     fingerprint_file.write(fingerprint)
     fingerprint_file.close()
@@ -198,6 +201,27 @@ def current_time():
     timestamp.write(time)
     timestamp.close()
     return time
+
+
+def usb_detect_and_write(chunk):
+    if os.name == 'nt':
+        try:
+            output = str(subprocess.check_output("wmic logicaldisk list brief | findstr KEYDRIVE", shell=True))
+        except subprocess.CalledProcessError:
+             return 1
+        save_path = (output[2:3] + ':\chunk.txt')
+    elif os.name == 'posix':
+        output = str(subprocess.check_output("lsblk -o MOUNTPOINT | grep KEYDRIVE", shell = True))
+        if not output.find("KEYDRIVE"):
+            return 1
+        else:
+            output = (output[2:])
+            output = (output[:-3])
+            save_path = (output + '/chunk.txt')
+    keydrive_file = open(save_path, "w")
+    keydrive_file.write(chunk)
+    keydrive_file.close()
+    return 0
 
 
 def output_results(username, password, key):  # This function is for debugging
