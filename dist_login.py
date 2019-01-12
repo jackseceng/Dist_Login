@@ -3,7 +3,6 @@ from getpass import getpass as get_password
 from hashlib import sha256 as sha256_hash_data
 from hashlib import sha1 as sha1_hash_data
 from sys import exit
-import datetime
 import subprocess
 import os
 
@@ -130,8 +129,7 @@ def new_user():
     print('Create new account')
     new_username = input_username(1)
     new_password = input_password(1)
-    time = current_time()
-    key = generate_key(new_username + new_password + time)
+    key = generate_key(new_username + new_password)
     fingerprint = fingerprint_key(key)
     store_key_fingerprint(key, fingerprint)
     output_results(new_username, new_password, key)
@@ -141,8 +139,7 @@ def existing_user():
     print('Login to existing account')
     existing_username = input_username(2)
     existing_password = input_password(2)
-    previous_timestamp = open("timestamp.txt").read()
-    key = generate_key(existing_username + existing_password + previous_timestamp)
+    key = generate_key(existing_username + existing_password)
     is_key_correct = fingerprint_check(key)
     if is_key_correct is True:
         print("Key is correct, login verified.")
@@ -162,10 +159,10 @@ def fingerprint_key(arg):
     return fingerprint.hexdigest()
 
 
-def fingerprint_check(arg):
+def fingerprint_check(login_key):
     stored_key = read_stored_key()
     stored_key_fingerprint = fingerprint_key(stored_key)
-    submitted_key_fingerprint = fingerprint_key(arg)
+    submitted_key_fingerprint = fingerprint_key(login_key)
     if stored_key_fingerprint == submitted_key_fingerprint:
         return True
     else:
@@ -173,18 +170,15 @@ def fingerprint_check(arg):
 
 
 def read_stored_key():
-    extracted_chunk0 = open("chunk0.txt").read()
-    extracted_chunk1 = open("chunk1.txt").read()
+    extracted_chunk0 = usb_read_write("read")
+    extracted_chunk1 = open("chunk.txt").read()
     key = extracted_chunk0 + extracted_chunk1
     return key
 
 
 def store_key_fingerprint(key, fingerprint):
     chunks = regular_expression.findall('................................?', key)
-    write_chunk0 = usb_detect_and_write(chunks[0])
-    if write_chunk0 is 1:
-        print ("KEYDRIVE not detected")
-        exit()
+    usb_read_write(chunks[0])
     chunk_file = open("chunk.txt", "w")
     chunk_file.write(chunks[1])
     chunk_file.close()
@@ -193,35 +187,33 @@ def store_key_fingerprint(key, fingerprint):
     fingerprint_file.close()
 
 
-def current_time():
-    hour = str(datetime.datetime.today().hour)
-    minute = str(datetime.datetime.today().minute)
-    time = hour + minute
-    timestamp = open("timestamp.txt", "w")
-    timestamp.write(time)
-    timestamp.close()
-    return time
-
-
-def usb_detect_and_write(chunk):
+def usb_read_write(chunk):
+    drive_path = ""
+    output = ""
     if os.name == 'nt':
         try:
             output = str(subprocess.check_output("wmic logicaldisk list brief | findstr KEYDRIVE", shell=True))
         except subprocess.CalledProcessError:
-             return 1
-        save_path = (output[2:3] + ':\chunk.txt')
+            print("KEYDRIVE not found")
+            exit()
+        drive_path = (output[2:3] + ':\chunk.txt')
     elif os.name == 'posix':
         output = str(subprocess.check_output("lsblk -o MOUNTPOINT | grep KEYDRIVE", shell = True))
         if not output.find("KEYDRIVE"):
-            return 1
+            print("KEYDRIVE not found")
+            exit()
         else:
             output = (output[2:])
             output = (output[:-3])
-            save_path = (output + '/chunk.txt')
-    keydrive_file = open(save_path, "w")
-    keydrive_file.write(chunk)
-    keydrive_file.close()
-    return 0
+            drive_path = (output + '/chunk.txt')
+    if chunk is "read":
+        keydrive_chunk = open(drive_path).read()
+        return keydrive_chunk
+    else:
+        keydrive_file = open(drive_path, "w")
+        keydrive_file.write(chunk)
+        keydrive_file.close()
+        return 0
 
 
 def output_results(username, password, key):  # This function is for debugging
