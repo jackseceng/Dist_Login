@@ -71,6 +71,13 @@ replace
 like
 handler
 bfilename
+username
+password
+key_chunk
+fingerprint
+timestamp
+credentials
+fingerprints
 ' or username like '%
 ' or uname like '%
 ' or userid like '%

@@ -1,0 +1,27 @@
+create database dist_login;
+
+use dist_login;
+
+create table credentials(
+username VARCHAR(99) not null,
+key_chunk VARCHAR(32),
+timestamp DATETIME
+primary key (username)
+);
+
+create table fingerprints (
+username VARCHAR(99), 
+fingerprint(40), 
+primary key (username) 
+references credentials(username)
+);
+
+create user 
+'<user>'@'<address>' 
+identfified by '<password>'
+;
+
+grant select, update, insert 
+on dist_login.*
+to '<user>'@'<address>'
+;
