@@ -22,8 +22,7 @@ To run, simply point your python interpreter at the dist_login.py file in the Li
     C:\Python37> python.exe C:\Users\user\dist_login\Libraries\dist_login.py
 
 - Example for Ubuntu 16.04(untested):
-    bash:~$ cd /home/dist_login/Libraries
-    bash:~$ python3 dist_login.py
+    bash:~$ python3 /home/dist_login/Libraries/dist_login.py
     
 Developed by Jack:
 https://jacksec.uk
