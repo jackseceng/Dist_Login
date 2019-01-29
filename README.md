@@ -1,7 +1,7 @@
 # Distributed Login
 Distributed login system using SQL databases and USB storage to distribute an authentication key as part of a 2FA system.
 
-Tested with: Windows 10 build 17763
+Tested with: Windows 10 build 17763, Ubuntu 16.04 in testing
 
 Requires: Python 3.7, MySQL 5.7.24 database(s), USB drive with at least 2MB of free space
 
