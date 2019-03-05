@@ -2,9 +2,9 @@ import mysql.connector
 
 
 sql_connection = mysql.connector.connect(
-    user='<user>',
-    password='<password>',
-    host='<sql_host>',
+    user='<sql_user>',
+    password='<sql_password>',
+    host='<sql_b_host>',
     database='dist_login')
 
 
@@ -83,3 +83,4 @@ def initiate_new_user(user):
 def sql_close_connection():
     # print("Group B close connection") # Uncomment this for debugging sql
     sql_connection.close()
+

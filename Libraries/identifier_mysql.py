@@ -2,9 +2,9 @@ import mysql.connector
 
 
 sql_connection = mysql.connector.connect(
-    user='<user>',
-    password='<password>',
-    host='<sql_host>',
+    user='<sql_user>',
+    password='<sql_password>',
+    host='<sql_identifiers_host>',
     database='passwords')
 
 
@@ -29,3 +29,4 @@ def sql_write_user_identifiers(user, identifier):
 def sql_close_connection():
     # print("identifier sql close connection") # Uncomment this for debugging sql
     sql_connection.close()
+

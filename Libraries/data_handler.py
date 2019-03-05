@@ -1,16 +1,30 @@
 import re as regular_expression
+import time
 import usb_handler
 import group_a_mysql
 import group_b_mysql
 
 
 def sql_inject_check(arg):
-    if arg in open('../files/sql_inject_strings.txt').read():
+    if arg in open('<path_to_Dist_Login>/Files/sql_inject_strings.txt').read():
         return True
 
     else:
         return False
 
+def clear():
+    f = open('<path_to_Dist_Login>/Files/usb_chunk.txt', 'w+')
+    f.write('blank')
+    f.close()
+
+def check():
+    f = open('<path_to_Dist_Login>/Files/usb_chunk.txt', 'r')
+    contents = f.read()
+    if regular_expression.fullmatch(("blank"), contents):
+        f.close()
+        return True
+    else:
+        return False
 
 def fingerprint_check(username, group):
     stored_key_fingerprint = str("")
@@ -32,6 +46,12 @@ def fingerprint_check(username, group):
 
 
 def read_stored_key(user, group):
+    clear()
+    blank = check()
+    print("Insert KEYDRIVE into your machine and run 'send.py' now")
+    while blank is True:
+        blank = check()
+        time.sleep(1)
     extracted_chunk0 = usb_handler.usb_read_write_chunk("read")
     extracted_chunk1 = str("")
     if group is 'a':
@@ -46,9 +66,13 @@ def read_stored_key(user, group):
     return key
 
 
-def store_key_fingerprint(username, key, fingerprint, group):
+def store_key_fingerprint(username, key, fingerprint, group, mode):
     chunks = regular_expression.findall('................................?', key)
-    usb_handler.usb_read_write_chunk(chunks[0])
+    if mode is "exist":
+        usb_handler.usb_read_write_chunk(chunks[0])
+    elif mode is "new":
+        #print("init usb chunk with" + chunks[0]) #This is for debugging only
+        usb_handler.init_usb_chunk(chunks[0])
     if group is 'a':
         group_a_mysql.sql_write_chunk_fingerprint(username, chunks[1], fingerprint)
     elif group is 'b':

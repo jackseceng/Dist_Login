@@ -2,9 +2,9 @@ import mysql.connector
 
 
 sql_connection = mysql.connector.connect(
-    user='<user>',
-    password='<password>',
-    host='<sql_host>',
+    user='<sql_user>',
+    password='<sql_password>',
+    host='<sql_a_host>',
     database='dist_login')
 
 

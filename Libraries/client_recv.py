@@ -3,7 +3,7 @@ import sys
 import ssl
 
 def save_data(connstream, data):
-    f = open('<path_to_Dist_Login>/Files/usb_chunk.txt', 'w+')
+    f = open('<path_to_KEYDRIVE>/chunk.txt', 'w+')
     received = (data.decode('utf-8')).rstrip()
     with f:
         f.write(received)
@@ -16,14 +16,14 @@ def receive_data(connstream):
         data = connstream.read()
 
 bindsocket = socket.socket()
-bindsocket.bind(('', <server_port>))
+bindsocket.bind(('', <client_port))
 bindsocket.listen(5)
 received = "empty"
-f = open('<path_to_Dist_Login>/Files/usb_chunk.txt', 'w+')
+f = open('<path_to_KEYDRIVE>/chunk.txt', 'w+')
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
-    connstream = ssl.wrap_socket(newsocket, server_side = True, certfile = "<path_to_Dist_Login>/Files/ssl/recv_server.crt", keyfile = "../Files/ssl/recv_server.key")
+    connstream = ssl.wrap_socket(newsocket, server_side = True, certfile = "../Files/ssl/recv_server.crt", keyfile = "../Files/ssl/recv_server.key")
     try:
         print('Receiving usb key chunk')
         receive_data(connstream)
