@@ -1,8 +1,7 @@
 import socket
-import sys
 import ssl
 
-def save_data(connstream, data):
+def save_data(data):
     f = open('<path_to_KEYDRIVE>/chunk.txt', 'w+')
     received = (data.decode('utf-8')).rstrip()
     with f:
@@ -11,7 +10,7 @@ def save_data(connstream, data):
 def receive_data(connstream):
     data = connstream.read()
     while data:
-        if not save_data(connstream, data):
+        if not save_data(data):
             break
         data = connstream.read()
 
