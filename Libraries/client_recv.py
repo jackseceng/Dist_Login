@@ -18,18 +18,15 @@ def receive_data(connstream):
 bindsocket = socket.socket()
 bindsocket.bind(('', <client_port))
 bindsocket.listen(5)
-received = "empty"
-f = open('<path_to_KEYDRIVE>/chunk.txt', 'w+')
 
 while True:
     newsocket, fromaddr = bindsocket.accept()
-    connstream = ssl.wrap_socket(newsocket, server_side = True, certfile = "../Files/ssl/recv_server.crt", keyfile = "../Files/ssl/recv_server.key")
+    connstream = ssl.wrap_socket(newsocket, server_side = True, certfile = "<path_to_Dist_Login>/Files/ssl/recv_server.crt", keyfile = "<Path_to_Dist_Login>/Files/ssl/recv_server.key")
     try:
         print('Receiving usb key chunk')
         receive_data(connstream)
     finally:
         connstream.shutdown(socket.SHUT_RDWR)
         connstream.close()
-        f.close()
         print("Closed local file")
 
