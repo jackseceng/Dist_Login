@@ -24,6 +24,18 @@ To run, simply point your python interpreter at the dist_login.py file in the Li
 - Example for Ubuntu 16.04(untested):
     bash:~$ python3 /home/dist_login/Libraries/dist_login.py
     
+Further development:
+
+- Encrypting data at rest on USB drive, possibly using fingerprint as key to a Vignere cipher
+
+- An account recovery function
+
+- Testing out further distribution of security data using 8 SQL databases implemented with logical groups
+
+- Integration with YubiKey instead of USB drive
+
+- Develop a user interface to further increase usability and user friendliness
+    
 Developed by Jack:
 https://jacksec.uk
 
